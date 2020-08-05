@@ -6,8 +6,6 @@ const _ = require('lodash');
 
 const app = express();
 
-// const listOfTasks = ['Buy food', 'Cook food', 'Eat food'];
-// const listOfWorkingTasks = [];
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://localhost:27017/todolistDB', {
   useNewUrlParser: true,
