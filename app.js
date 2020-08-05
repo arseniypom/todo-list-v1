@@ -1,15 +1,16 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const date = require(__dirname + '/date.js');
+// const date = require(__dirname + '/date.js');
+const securityData = require(__dirname + '/mongoDB-security-data.js');
 const mongoose = require('mongoose');
 const _ = require('lodash');
-
 const app = express();
 
 mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost:27017/todolistDB', {
+mongoose.connect(`mongodb+srv://admin-arseniy:${securityData.password}@cluster0.kwkdp.mongodb.net/todolistDB?retryWrites=true&w=majority`, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
+  useFindAndModify: false
 });
 
 const itemsSchema = new mongoose.Schema({
@@ -59,7 +60,7 @@ app.get('/', function(req, res) {
         res.redirect('/')
       } else {
         res.render('list', {
-          listTitle: `Today's list`,
+          listTitle: 'Today',
           newListItems: foundItems
         })
       }
@@ -101,16 +102,18 @@ app.post('/', function(req, res) {
     name: itemName
   })
 
-  if (listName === `Today's list`) {
+  if (listName === 'Today') {
     addedItem.save();
     res.redirect('/');
   } else {
     List.findOne({
       name: listName
     }, function(err, foundList) {
-      foundList.items.push(addedItem);
-      foundList.save();
-      res.redirect('/' + listName)
+      if (!err) {
+        foundList.items.push(addedItem);
+        foundList.save();
+        res.redirect('/' + listName)
+      }
     })
   }
 })
@@ -119,7 +122,7 @@ app.post('/delete', function(req, res) {
   const checkedItemId = req.body.checkbox;
   const listName = req.body.listName;
 
-  if (listName === `Today's list`) {
+  if (listName === 'Today') {
     Item.findByIdAndRemove(checkedItemId, function(err) {
       if (err) {
         console.log(err);
